@@ -1,0 +1,64 @@
+using System;
+using UnityEngine;
+using UnityEngine.InputSystem;
+
+[RequireComponent(typeof(Player))]
+public class PlayerController : MonoBehaviour
+{
+    private PlayerInputActions inputActions;
+
+    public delegate void OnMoveAction(Vector2 moveInput);
+    public event OnMoveAction onMove;
+
+    public delegate void OnLookAction(Vector2 lookInput);
+    public event OnLookAction onLook;
+
+    public delegate void OnJumpAction();
+    public event OnJumpAction onJump;
+
+    private void Awake()
+    {
+        inputActions = new PlayerInputActions();
+    }
+
+    private void OnEnable()
+    {
+        inputActions.Player.Enable();
+        
+        inputActions.Player.Jump.performed += HandleJumpInput;
+    }
+
+    private void OnDisable()
+    {
+        inputActions.Player.Disable();
+
+        inputActions.Player.Jump.performed -= HandleJumpInput;
+    }
+
+
+
+    private void Update()
+    {
+        HandleMoveInput();
+
+        HandleLookInput();
+    }
+
+    private void HandleMoveInput()
+    {
+        Vector2 moveInput = inputActions.Player.Move.ReadValue<Vector2>();
+        onMove?.Invoke(moveInput);
+    }
+
+    private void HandleLookInput()
+    {
+        Vector2 lookInput = inputActions.Player.Look.ReadValue<Vector2>();
+        onLook?.Invoke(lookInput);
+    }
+
+    private void HandleJumpInput(InputAction.CallbackContext context)
+    {
+        onJump?.Invoke();
+    }
+
+}
