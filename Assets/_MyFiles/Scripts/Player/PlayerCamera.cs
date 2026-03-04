@@ -3,6 +3,8 @@ using UnityEngine;
 [RequireComponent(typeof(Player))]
 public class PlayerCamera : MonoBehaviour
 {
+    private Portal[] portals;
+
     private PlayerController playerController;
 
     //
@@ -20,8 +22,27 @@ public class PlayerCamera : MonoBehaviour
     private void Awake()
     {
         playerController = GetComponent<PlayerController>();
+        portals = FindObjectsByType<Portal>(FindObjectsSortMode.None);
 
         playerController.onLook += HandleLook;
+    }
+
+    
+    private void LateUpdate () 
+    {
+        for (int i = 0; i < portals.Length; i++) 
+        {
+            portals[i].PrePortalRender ();
+        }
+        for (int i = 0; i < portals.Length; i++) 
+        {
+            portals[i].Render ();
+        }
+        for (int i = 0; i < portals.Length; i++) 
+        {
+            portals[i].PostPortalRender ();
+        }
+
     }
 
     private void HandleLook(Vector2 lookInput)

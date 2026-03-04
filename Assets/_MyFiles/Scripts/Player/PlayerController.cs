@@ -24,8 +24,12 @@ public class PlayerController : MonoBehaviour
     private void OnEnable()
     {
         inputActions.Player.Enable();
-        
+
         inputActions.Player.Jump.performed += HandleJumpInput;
+        inputActions.Player.Blink.performed += HandleBlinkInput;
+        inputActions.Player.Blink.canceled += HandleBlinkInput;
+
+        inputActions.Player.Pause.performed += HandlePauseInput;
     }
 
     private void OnDisable()
@@ -33,6 +37,8 @@ public class PlayerController : MonoBehaviour
         inputActions.Player.Disable();
 
         inputActions.Player.Jump.performed -= HandleJumpInput;
+        inputActions.Player.Blink.performed -= HandleBlinkInput;
+        inputActions.Player.Blink.canceled -= HandleBlinkInput;
     }
 
 
@@ -56,9 +62,32 @@ public class PlayerController : MonoBehaviour
         onLook?.Invoke(lookInput);
     }
 
+    private void HandleBlinkInput(InputAction.CallbackContext context)
+    {
+        if(context.performed)
+        {
+            BlinkEvents.TriggerBlink();
+        }
+        else if(context.canceled)
+        {
+            BlinkEvents.TriggerBlinkRelease();
+        }
+    }
+
     private void HandleJumpInput(InputAction.CallbackContext context)
     {
         onJump?.Invoke();
     }
 
+    private void HandlePauseInput(InputAction.CallbackContext context)
+    {
+        if (GameManager.Instance.IsGamePaused)
+        {
+            GameManager.Instance.ResumeGame();
+        }
+        else
+        {
+            GameManager.Instance.PauseGame();
+        }
+    }
 }

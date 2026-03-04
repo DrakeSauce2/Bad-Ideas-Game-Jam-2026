@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 
 [RequireComponent(typeof(Player))]
-public class PlayerMovement : MonoBehaviour
+public class PlayerMovement : PortalTraveler
 {
     private CharacterController characterController;
     private PlayerController playerController;
@@ -20,10 +20,12 @@ public class PlayerMovement : MonoBehaviour
 
     private Vector2 moveInput = Vector2.zero;
     private float verticalVelocity = 0f;
-    private float yawInput = 0f;
+    private float yaw = 0f;
+    //private float smoothYaw = 0f;
 
     private Vector3 horizontalVelocity = Vector3.zero;
 
+    private Vector3 velocity = Vector3.zero;
     //
 
     private void Awake()
@@ -39,7 +41,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void HandleMove(Vector2 moveInput) => this.moveInput = moveInput;
 
-    private void HandleLook(Vector2 lookInput) => yawInput = lookInput.x;
+    private void HandleLook(Vector2 lookInput) => yaw = lookInput.x;
 
     private void Update()
     {
@@ -50,9 +52,9 @@ public class PlayerMovement : MonoBehaviour
     {
         if (!characterController) return;
 
-        transform.Rotate(Vector3.up * yawInput * turnSpeed * Time.deltaTime);
+        transform.Rotate(Vector3.up * turnSpeed * Time.deltaTime * yaw);
 
-       ApplyGravityForce();
+        ApplyGravityForce();
 
         Vector3 desiredMove =
             transform.forward * moveInput.y +
@@ -63,7 +65,7 @@ public class PlayerMovement : MonoBehaviour
 
         ApplyGroundVelocity(desiredMove);
 
-        Vector3 velocity = horizontalVelocity + Vector3.up * verticalVelocity;
+        velocity = horizontalVelocity + Vector3.up * verticalVelocity;
 
         characterController.Move(velocity * Time.deltaTime);
     }
@@ -111,6 +113,18 @@ public class PlayerMovement : MonoBehaviour
         horizontalVelocity = initial * moveSpeed;
 
         verticalVelocity = Mathf.Sqrt(jumpHeight * -2f * gravity);
+    }
+
+    public override void Teleport (Transform fromPortal, Transform toPortal, Vector3 pos, Quaternion rot) 
+    {
+        transform.position = pos;
+        Vector3 eulerRot = rot.eulerAngles;
+        //float delta = Mathf.DeltaAngle (smoothYaw, eulerRot.y);
+        //yaw += delta;
+        //smoothYaw += delta;
+        //transform.eulerAngles = Vector3.up * smoothYaw;
+        velocity = toPortal.TransformVector (fromPortal.InverseTransformVector (velocity));
+        Physics.SyncTransforms ();
     }
 
 }
